@@ -26,7 +26,8 @@
     CGRect scaleRect;
     CGRect waveRect;
     
-    UIColor *currentWaterColor;
+    UIColor *frontWaterColor;
+    UIColor *backWaterColor;
     UIColor *waterBgColor;
     
     CGFloat currentLinePointY;
@@ -65,11 +66,12 @@
     b = 0;
     increase = NO;
     
-    currentWaterColor = [UIColor colorWithRed:0.322 green:0.514 blue:0.831 alpha:1.00];
+    frontWaterColor = [UIColor colorWithRed:0.325 green:0.392 blue:0.729 alpha:1.00];
+    backWaterColor = [UIColor colorWithRed:0.322 green:0.514 blue:0.831 alpha:1.00];
     waterBgColor = [UIColor colorWithRed:0.259 green:0.329 blue:0.506 alpha:1.00];
-    _percent = 0.8;
+    _percent = 0.45;
     
-    _scaleMargin = 20;
+    _scaleMargin = 30;
     _waveMargin = 18;
     
     [self initDrawingRects];
@@ -145,57 +147,106 @@
  *  @param context 全局context
  */
 - (void)drawWave:(CGContextRef)context {
-    CGMutablePathRef path = CGPathCreateMutable();
+    
+    CGMutablePathRef frontPath = CGPathCreateMutable();
+    CGMutablePathRef backPath = CGPathCreateMutable();
     
     //画水
     CGContextSetLineWidth(context, 1);
-    CGContextSetFillColorWithColor(context, [currentWaterColor CGColor]);
+    CGContextSetFillColorWithColor(context, [frontWaterColor CGColor]);
     
     CGFloat offset = _scaleMargin + _waveMargin + _scaleDivisionsWidth;
     
-    float y = currentLinePointY;
+    float frontY = currentLinePointY;
+    float backY = currentLinePointY;
     
     CGFloat radius = waveRect.size.width / 2;
     
-    CGPoint startPoint = CGPointMake(offset, y + offset);
-    CGPoint endPoint = CGPointMake(offset, y + offset);
+    CGPoint frontStartPoint = CGPointMake(offset, currentLinePointY + offset);
+    CGPoint frontEndPoint = CGPointMake(offset, currentLinePointY + offset);
+    
+    CGPoint backStartPoint = CGPointMake(offset, currentLinePointY + offset);
+    CGPoint backEndPoint = CGPointMake(offset, currentLinePointY + offset);
     
     for(float x = 0; x <= waveRect.size.width; x++){
-        y = a * sin( x / 180 * M_PI + 4 * b / M_PI ) * amplitude + currentLinePointY;
         
-        CGFloat circleY = y;
+        //前浪绘制
+        frontY = a * sin( x / 180 * M_PI + 4 * b / M_PI ) * amplitude + currentLinePointY;
+        
+        CGFloat frontCircleY = frontY;
         if (currentLinePointY < radius) {
-            circleY = radius - sqrt(pow(radius, 2) - pow((radius - x), 2));
-            if (y < circleY) {
-                y = circleY;
+            frontCircleY = radius - sqrt(pow(radius, 2) - pow((radius - x), 2));
+            if (frontY < frontCircleY) {
+                frontY = frontCircleY;
             }
         } else if (currentLinePointY > radius) {
-            circleY = radius + sqrt(pow(radius, 2) - pow((radius - x), 2));
-            if (y > circleY) {
-                y = circleY;
+            frontCircleY = radius + sqrt(pow(radius, 2) - pow((radius - x), 2));
+            if (frontY > frontCircleY) {
+                frontY = frontCircleY;
             }
         }
         
         if (fabs(0 - x) < 0.001) {
-            startPoint = CGPointMake(x + offset, y + offset);
-            CGPathMoveToPoint(path, NULL, startPoint.x, startPoint.y);
+            frontStartPoint = CGPointMake(x + offset, frontY + offset);
+            CGPathMoveToPoint(frontPath, NULL, frontStartPoint.x, frontStartPoint.y);
         }
         
-        endPoint = CGPointMake(x + offset, y + offset);
-        CGPathAddLineToPoint(path, nil, endPoint.x, endPoint.y);
+        frontEndPoint = CGPointMake(x + offset, frontY + offset);
+        CGPathAddLineToPoint(frontPath, nil, frontEndPoint.x, frontEndPoint.y);
+        
+        //后波浪绘制
+        backY = a * cos( x / 180 * M_PI + 3 * b / M_PI ) * amplitude + currentLinePointY;
+        CGFloat backCircleY = backY;
+        if (currentLinePointY < radius) {
+            backCircleY = radius - sqrt(pow(radius, 2) - pow((radius - x), 2));
+            if (backY < backCircleY) {
+                backY = backCircleY;
+            }
+        } else if (currentLinePointY > radius) {
+            backCircleY = radius + sqrt(pow(radius, 2) - pow((radius - x), 2));
+            if (backY > backCircleY) {
+                backY = backCircleY;
+            }
+        }
+        
+        if (fabs(0 - x) < 0.001) {
+            backStartPoint = CGPointMake(x + offset, backY + offset);
+            CGPathMoveToPoint(backPath, NULL, backStartPoint.x, backStartPoint.y);
+        }
+        
+        backEndPoint = CGPointMake(x + offset, backY + offset);
+        CGPathAddLineToPoint(backPath, nil, backEndPoint.x, backEndPoint.y);
     }
     
     CGPoint centerPoint = CGPointMake(fullRect.size.width / 2, fullRect.size.height / 2);
     
-    CGFloat start = [self calculateRotateDegree:centerPoint point:startPoint];
-    CGFloat end = [self calculateRotateDegree:centerPoint point:endPoint];
+    //绘制前浪圆弧
+    CGFloat frontStart = [self calculateRotateDegree:centerPoint point:frontStartPoint];
+    CGFloat frontEnd = [self calculateRotateDegree:centerPoint point:frontEndPoint];
     
-    CGPathAddArc(path, nil, centerPoint.x, centerPoint.y, waveRect.size.width / 2, end, start, 0);
-    
-    CGContextAddPath(context, path);
+    CGPathAddArc(frontPath, nil, centerPoint.x, centerPoint.y, waveRect.size.width / 2, frontEnd, frontStart, 0);
+    CGContextAddPath(context, frontPath);
     CGContextFillPath(context);
+    //推入
+    CGContextSaveGState(context);
     CGContextDrawPath(context, kCGPathStroke);
-    CGPathRelease(path);
+    CGPathRelease(frontPath);
+    
+    
+    //绘制后浪圆弧
+    CGFloat backStart = [self calculateRotateDegree:centerPoint point:backStartPoint];
+    CGFloat backEnd = [self calculateRotateDegree:centerPoint point:backEndPoint];
+    
+    CGPathAddArc(backPath, nil, centerPoint.x, centerPoint.y, waveRect.size.width / 2, backEnd, backStart, 0);
+    
+    CGContextSetFillColorWithColor(context, [backWaterColor CGColor]);
+    CGContextAddPath(context, backPath);
+    CGContextFillPath(context);
+    //推入
+    CGContextSaveGState(context);
+    CGContextDrawPath(context, kCGPathStroke);
+    CGPathRelease(backPath);
+    
 }
 
 /**
@@ -204,6 +255,8 @@
  *  @param context 全局context
  */
 - (void)drawBackground:(CGContextRef)context {
+    
+    //画背景圆
     CGMutablePathRef path = CGPathCreateMutable();
     CGContextSetLineWidth(context, 1);
     CGContextSetFillColorWithColor(context, [waterBgColor CGColor]);
@@ -215,6 +268,46 @@
     CGContextFillPath(context);
     CGContextDrawPath(context, kCGPathStroke);
     CGPathRelease(path);
+    
+    //绘制背景的线
+    //======================= 矩阵操作 ============================
+    CGContextTranslateCTM(context, fullRect.size.width / 2, fullRect.size.width / 2);
+    
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+    CGContextSetLineWidth(context, 1);
+    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, -M_PI / 4, M_PI / 4, 0);
+    CGContextStrokePath(context);
+    
+    CGContextRotateCTM(context, M_PI / 4);
+    CGContextMoveToPoint(context, fullRect.size.width/2 - 4, 0);
+    CGContextAddLineToPoint(context, fullRect.size.width/2, 0);
+    // 3. 渲染
+    CGContextStrokePath(context);
+    CGContextRotateCTM(context, -M_PI / 4);
+    
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+    CGContextSetLineWidth(context, 1);
+    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, M_PI * 3 / 4, M_PI * 5 / 4, 0);
+    CGContextStrokePath(context);
+    
+    CGContextRotateCTM(context, M_PI * 5 / 4);
+    CGContextMoveToPoint(context, fullRect.size.width/2 - 4, 0);
+    CGContextAddLineToPoint(context, fullRect.size.width/2, 0);
+    // 3. 渲染
+    CGContextStrokePath(context);
+    CGContextRotateCTM(context, -M_PI * 5 / 4);
+    
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+    CGContextSetLineWidth(context, 6);
+    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 4 / 10, M_PI * 6 / 10, 0);
+    CGContextStrokePath(context);
+    
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+    CGContextSetLineWidth(context, 6);
+    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 14 / 10, M_PI * 16 / 10, 0);
+    CGContextStrokePath(context);
+    
+    CGContextTranslateCTM(context, -fullRect.size.width / 2, -fullRect.size.width / 2);
 }
 
 /**
