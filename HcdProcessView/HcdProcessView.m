@@ -26,10 +26,6 @@
     CGRect scaleRect;
     CGRect waveRect;
     
-    UIColor *frontWaterColor;
-    UIColor *backWaterColor;
-    UIColor *waterBgColor;
-    
     CGFloat currentLinePointY;
     CGFloat targetLinePointY;
     CGFloat amplitude;//振幅
@@ -56,8 +52,6 @@
 
 - (void)initialize
 {
-    _innerRimWidth = 0.05;
-    _innerRimBorderWidth = 0.005;
     _scaleDivisionsLength = 10;
     _scaleDivisionsWidth = 2;
     _scaleCount = 100;
@@ -66,19 +60,16 @@
     b = 0;
     increase = NO;
     
-    frontWaterColor = [UIColor colorWithRed:0.325 green:0.392 blue:0.729 alpha:1.00];
-    backWaterColor = [UIColor colorWithRed:0.322 green:0.514 blue:0.831 alpha:1.00];
-    waterBgColor = [UIColor colorWithRed:0.259 green:0.329 blue:0.506 alpha:1.00];
+    _frontWaterColor = [UIColor colorWithRed:0.325 green:0.392 blue:0.729 alpha:1.00];
+    _backWaterColor = [UIColor colorWithRed:0.322 green:0.514 blue:0.831 alpha:1.00];
+    _waterBgColor = [UIColor colorWithRed:0.259 green:0.329 blue:0.506 alpha:1.00];
     _percent = 0.45;
     
     _scaleMargin = 30;
     _waveMargin = 18;
+    _showBgLineView = NO;
     
     [self initDrawingRects];
-    
-    currentLinePointY = waveRect.size.height;
-    targetLinePointY = waveRect.size.height * (1 - _percent);
-    amplitude = (waveRect.size.height / 320.0) * 10;
     
     [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(animateWave) userInfo:nil repeats:YES];
 }
@@ -96,6 +87,12 @@
                           offset,
                           fullRect.size.width - 2 * offset,
                           fullRect.size.height - 2 * offset);
+    
+    currentLinePointY = waveRect.size.height;
+    targetLinePointY = waveRect.size.height * (1 - _percent);
+    amplitude = (waveRect.size.height / 320.0) * 10;
+    
+    [self setNeedsDisplay];
 }
 
 // 覆盖drawRect方法，你可以在此自定义绘画和动画
@@ -153,7 +150,7 @@
     
     //画水
     CGContextSetLineWidth(context, 1);
-    CGContextSetFillColorWithColor(context, [frontWaterColor CGColor]);
+    CGContextSetFillColorWithColor(context, [_frontWaterColor CGColor]);
     
     CGFloat offset = _scaleMargin + _waveMargin + _scaleDivisionsWidth;
     
@@ -239,7 +236,7 @@
     
     CGPathAddArc(backPath, nil, centerPoint.x, centerPoint.y, waveRect.size.width / 2, backEnd, backStart, 0);
     
-    CGContextSetFillColorWithColor(context, [backWaterColor CGColor]);
+    CGContextSetFillColorWithColor(context, [_backWaterColor CGColor]);
     CGContextAddPath(context, backPath);
     CGContextFillPath(context);
     //推入
@@ -259,7 +256,7 @@
     //画背景圆
     CGMutablePathRef path = CGPathCreateMutable();
     CGContextSetLineWidth(context, 1);
-    CGContextSetFillColorWithColor(context, [waterBgColor CGColor]);
+    CGContextSetFillColorWithColor(context, [_waterBgColor CGColor]);
     
     CGPoint centerPoint = CGPointMake(fullRect.size.width / 2, fullRect.size.height / 2);
     CGPathAddArc(path, nil, centerPoint.x, centerPoint.y, waveRect.size.width / 2, 0, 2 * M_PI, 0);
@@ -269,45 +266,47 @@
     CGContextDrawPath(context, kCGPathStroke);
     CGPathRelease(path);
     
-    //绘制背景的线
-    //======================= 矩阵操作 ============================
-    CGContextTranslateCTM(context, fullRect.size.width / 2, fullRect.size.width / 2);
-    
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
-    CGContextSetLineWidth(context, 1);
-    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, -M_PI / 4, M_PI / 4, 0);
-    CGContextStrokePath(context);
-    
-    CGContextRotateCTM(context, M_PI / 4);
-    CGContextMoveToPoint(context, fullRect.size.width/2 - 4, 0);
-    CGContextAddLineToPoint(context, fullRect.size.width/2, 0);
-    // 3. 渲染
-    CGContextStrokePath(context);
-    CGContextRotateCTM(context, -M_PI / 4);
-    
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
-    CGContextSetLineWidth(context, 1);
-    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, M_PI * 3 / 4, M_PI * 5 / 4, 0);
-    CGContextStrokePath(context);
-    
-    CGContextRotateCTM(context, M_PI * 5 / 4);
-    CGContextMoveToPoint(context, fullRect.size.width/2 - 4, 0);
-    CGContextAddLineToPoint(context, fullRect.size.width/2, 0);
-    // 3. 渲染
-    CGContextStrokePath(context);
-    CGContextRotateCTM(context, -M_PI * 5 / 4);
-    
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
-    CGContextSetLineWidth(context, 6);
-    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 4 / 10, M_PI * 6 / 10, 0);
-    CGContextStrokePath(context);
-    
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
-    CGContextSetLineWidth(context, 6);
-    CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 14 / 10, M_PI * 16 / 10, 0);
-    CGContextStrokePath(context);
-    
-    CGContextTranslateCTM(context, -fullRect.size.width / 2, -fullRect.size.width / 2);
+    if (_showBgLineView) {
+        //绘制背景的线
+        //======================= 矩阵操作 ============================
+        CGContextTranslateCTM(context, fullRect.size.width / 2, fullRect.size.width / 2);
+        
+        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetLineWidth(context, 1);
+        CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, -M_PI / 4, M_PI / 4, 0);
+        CGContextStrokePath(context);
+        
+        CGContextRotateCTM(context, M_PI / 4);
+        CGContextMoveToPoint(context, fullRect.size.width/2 - 4, 0);
+        CGContextAddLineToPoint(context, fullRect.size.width/2, 0);
+        // 3. 渲染
+        CGContextStrokePath(context);
+        CGContextRotateCTM(context, -M_PI / 4);
+        
+        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetLineWidth(context, 1);
+        CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, M_PI * 3 / 4, M_PI * 5 / 4, 0);
+        CGContextStrokePath(context);
+        
+        CGContextRotateCTM(context, M_PI * 5 / 4);
+        CGContextMoveToPoint(context, fullRect.size.width/2 - 4, 0);
+        CGContextAddLineToPoint(context, fullRect.size.width/2, 0);
+        // 3. 渲染
+        CGContextStrokePath(context);
+        CGContextRotateCTM(context, -M_PI * 5 / 4);
+        
+        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetLineWidth(context, 6);
+        CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 4 / 10, M_PI * 6 / 10, 0);
+        CGContextStrokePath(context);
+        
+        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetLineWidth(context, 6);
+        CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 14 / 10, M_PI * 16 / 10, 0);
+        CGContextStrokePath(context);
+        
+        CGContextTranslateCTM(context, -fullRect.size.width / 2, -fullRect.size.width / 2);
+    }
 }
 
 /**
@@ -369,9 +368,11 @@
     CGContextSaveGState(context);
 }
 
+/**
+ *  实时调用产生波浪的动画效果
+ */
 -(void)animateWave
 {
-    
     if (targetLinePointY == self.frame.size.height ||
         currentLinePointY == 0) {
         return;
@@ -384,21 +385,20 @@
     
     if (increase) {
         a += 0.01;
-    }else{
+    } else {
         a -= 0.01;
     }
     
     
-    if (a<=1) {
+    if (a <= 1) {
         increase = YES;
     }
     
-    if (a>=1.5) {
+    if (a >= 1.5) {
         increase = NO;
     }
     
-    
-    b+=0.1;
+    b += 0.1;
     
     [self setNeedsDisplay];
 }
@@ -449,6 +449,13 @@
     return rotateDegree;
 }
 
+/**
+ *  格式化电量的Label的字体
+ *
+ *  @param percent 百分比
+ *
+ *  @return 电量百分比文字参数
+ */
 -(NSMutableAttributedString *) formatBatteryLevel:(NSInteger)percent
 {
     UIColor *textColor = [UIColor whiteColor];
@@ -492,6 +499,13 @@
     return attrText;
 }
 
+/**
+ *  显示信息Label参数
+ *
+ *  @param text 显示的文字
+ *
+ *  @return 相关参数
+ */
 -(NSMutableAttributedString *) formatLabel:(NSString*)text
 {
     UIColor *textColor = [UIColor whiteColor];
@@ -513,7 +527,27 @@
 
 - (void)setPercent:(CGFloat)percent {
     _percent = percent;
-    [self setNeedsDisplay];
+    [self initDrawingRects];
+}
+
+- (void)setWaterBgColor:(UIColor *)waterBgColor {
+    _waterBgColor = waterBgColor;
+    [self initDrawingRects];
+}
+
+- (void)setFrontWaterColor:(UIColor *)frontWaterColor {
+    _frontWaterColor = frontWaterColor;
+    [self initDrawingRects];
+}
+
+- (void)setBackWaterColor:(UIColor *)backWaterColor {
+    _backWaterColor = backWaterColor;
+    [self initDrawingRects];
+}
+
+- (void)setShowBgLineView:(BOOL)showBgLineView {
+    _showBgLineView = showBgLineView;
+    [self initDrawingRects];
 }
 
 @end

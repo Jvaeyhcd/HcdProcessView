@@ -18,7 +18,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    HcdProcessView *customView = [[HcdProcessView alloc]initWithFrame:CGRectMake(self.view.frame.size.width / 10, 70, self.view.frame.size.width * 0.8, self.view.frame.size.width * 0.8)];
+    HcdProcessView *customView = [[HcdProcessView alloc]initWithFrame:CGRectMake(self.view.frame.size.width * 0.1, 70, self.view.frame.size.width * 0.8, self.view.frame.size.width * 0.8)];
+    customView.percent = 0.6;
+    customView.showBgLineView = YES;
     UIImageView *bgImageView = [[UIImageView alloc]initWithFrame:self.view.bounds];
     bgImageView.contentMode = UIViewContentModeScaleToFill;
     bgImageView.image = [UIImage imageNamed:@"charging_pic_bg"];
