@@ -383,6 +383,11 @@
         currentPercent = (waveRect.size.height - currentLinePointY) / waveRect.size.height;
     }
     
+    if (targetLinePointY > currentLinePointY) {
+        currentLinePointY += 1;
+        currentPercent = (waveRect.size.height - currentLinePointY) / waveRect.size.height;
+    }
+    
     if (increase) {
         a += 0.01;
     } else {
@@ -527,6 +532,8 @@
 
 - (void)setPercent:(CGFloat)percent {
     _percent = percent;
+    currentPercent = percent;
+    targetLinePointY = waveRect.size.height * (1 - _percent);
     [self initDrawingRects];
 }
 
