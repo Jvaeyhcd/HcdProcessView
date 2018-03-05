@@ -43,6 +43,15 @@
  */
 @property (nonatomic, readwrite, assign) CGFloat waveMargin;
 /**
+ *  波长
+ */
+@property (nonatomic, readwrite, assign) CGFloat waveLength;
+
+/**
+ * 振幅
+ */
+@property (nonatomic, readwrite, assign) CGFloat amplitude;
+/**
  *  百分比
  */
 @property (nonatomic, readwrite, assign) CGFloat percent;

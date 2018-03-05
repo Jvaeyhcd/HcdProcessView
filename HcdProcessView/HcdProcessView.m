@@ -28,7 +28,6 @@
     
     CGFloat currentLinePointY;
     CGFloat targetLinePointY;
-    CGFloat amplitude;//振幅
     
     CGFloat currentPercent;//但前百分比，用于保存第一次显示时的动画效果
     
@@ -59,6 +58,8 @@
     a = 1.5;
     b = 0;
     increase = NO;
+    _waveLength = 180;
+    _amplitude = 10;
     
     _frontWaterColor = [UIColor colorWithRed:0.325 green:0.392 blue:0.729 alpha:1.00];
     _backWaterColor = [UIColor colorWithRed:0.322 green:0.514 blue:0.831 alpha:1.00];
@@ -90,7 +91,6 @@
     
     currentLinePointY = waveRect.size.height;
     targetLinePointY = waveRect.size.height * (1 - _percent);
-    amplitude = (waveRect.size.height / 320.0) * 10;
     
     [self setNeedsDisplay];
 }
@@ -168,15 +168,15 @@
     for(float x = 0; x <= waveRect.size.width; x++){
         
         //前浪绘制
-        frontY = a * sin( x / 180 * M_PI + 4 * b / M_PI ) * amplitude + currentLinePointY;
+        frontY = a * sin( x / (_waveLength / 2) * M_PI + 4 * b / M_PI ) * _amplitude + currentLinePointY;
         
         CGFloat frontCircleY = frontY;
-        if (currentLinePointY < radius) {
+        if (frontY < radius) {
             frontCircleY = radius - sqrt(pow(radius, 2) - pow((radius - x), 2));
             if (frontY < frontCircleY) {
                 frontY = frontCircleY;
             }
-        } else if (currentLinePointY > radius) {
+        } else if (frontY > radius) {
             frontCircleY = radius + sqrt(pow(radius, 2) - pow((radius - x), 2));
             if (frontY > frontCircleY) {
                 frontY = frontCircleY;
@@ -192,14 +192,14 @@
         CGPathAddLineToPoint(frontPath, nil, frontEndPoint.x, frontEndPoint.y);
         
         //后波浪绘制
-        backY = a * cos( x / 180 * M_PI + 3 * b / M_PI ) * amplitude + currentLinePointY;
+        backY = a * cos( x / (_waveLength / 2) * M_PI + 3 * b / M_PI ) * _amplitude + currentLinePointY;
         CGFloat backCircleY = backY;
-        if (currentLinePointY < radius) {
+        if (backY < radius) {
             backCircleY = radius - sqrt(pow(radius, 2) - pow((radius - x), 2));
             if (backY < backCircleY) {
                 backY = backCircleY;
             }
-        } else if (currentLinePointY > radius) {
+        } else if (backY > radius) {
             backCircleY = radius + sqrt(pow(radius, 2) - pow((radius - x), 2));
             if (backY > backCircleY) {
                 backY = backCircleY;
@@ -554,6 +554,21 @@
 
 - (void)setShowBgLineView:(BOOL)showBgLineView {
     _showBgLineView = showBgLineView;
+    [self initDrawingRects];
+}
+
+- (void)setAmplitude:(CGFloat)amplitude {
+    _amplitude = amplitude;
+    [self initDrawingRects];
+}
+
+- (void)setWaveLength:(CGFloat)waveLength {
+    _waveLength = waveLength;
+    [self initDrawingRects];
+}
+
+- (void)setWaveMargin:(CGFloat)waveMargin {
+    _waveMargin = waveMargin;
     [self initDrawingRects];
 }
 
