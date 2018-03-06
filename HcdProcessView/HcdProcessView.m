@@ -64,6 +64,8 @@
     _frontWaterColor = [UIColor colorWithRed:0.325 green:0.392 blue:0.729 alpha:1.00];
     _backWaterColor = [UIColor colorWithRed:0.322 green:0.514 blue:0.831 alpha:1.00];
     _waterBgColor = [UIColor colorWithRed:0.259 green:0.329 blue:0.506 alpha:1.00];
+    _lineBgColor = [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00];
+    _scaleColor = [UIColor colorWithRed:0.969 green:0.937 blue:0.227 alpha:1.00];
     _percent = 0.45;
     
     _scaleMargin = 30;
@@ -119,7 +121,7 @@
     //======================= 矩阵操作 ============================
     CGContextTranslateCTM(context, fullRect.size.width / 2, fullRect.size.width / 2);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.655 green:0.710 blue:0.859 alpha:1.00].CGColor);//线框颜色
+    CGContextSetStrokeColorWithColor(context, _lineBgColor.CGColor);//线框颜色
     // 2. 绘制一些图形
     for (int i = 0; i < _scaleCount; i++) {
         CGContextMoveToPoint(context, scaleRect.size.width/2 - _scaleDivisionsLength, 0);
@@ -130,7 +132,7 @@
         CGContextRotateCTM(context, 2 * M_PI / _scaleCount);
     }
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+    CGContextSetStrokeColorWithColor(context, _lineBgColor.CGColor);//线框颜色
     CGContextSetLineWidth(context, 0.5);
     CGContextAddArc (context, 0, 0, scaleRect.size.width/2 - _scaleDivisionsLength - 3, 0, M_PI* 2 , 0);
     CGContextStrokePath(context);
@@ -271,7 +273,7 @@
         //======================= 矩阵操作 ============================
         CGContextTranslateCTM(context, fullRect.size.width / 2, fullRect.size.width / 2);
         
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetStrokeColorWithColor(context, _lineBgColor.CGColor);//线框颜色
         CGContextSetLineWidth(context, 1);
         CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, -M_PI / 4, M_PI / 4, 0);
         CGContextStrokePath(context);
@@ -283,7 +285,7 @@
         CGContextStrokePath(context);
         CGContextRotateCTM(context, -M_PI / 4);
         
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetStrokeColorWithColor(context, _lineBgColor.CGColor);//线框颜色
         CGContextSetLineWidth(context, 1);
         CGContextAddArc (context, 0, 0, fullRect.size.width/2 - 4, M_PI * 3 / 4, M_PI * 5 / 4, 0);
         CGContextStrokePath(context);
@@ -295,12 +297,12 @@
         CGContextStrokePath(context);
         CGContextRotateCTM(context, -M_PI * 5 / 4);
         
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetStrokeColorWithColor(context, _lineBgColor.CGColor);//线框颜色
         CGContextSetLineWidth(context, 6);
         CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 4 / 10, M_PI * 6 / 10, 0);
         CGContextStrokePath(context);
         
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.694 green:0.745 blue:0.867 alpha:1.00].CGColor);//线框颜色
+        CGContextSetStrokeColorWithColor(context, _lineBgColor.CGColor);//线框颜色
         CGContextSetLineWidth(context, 6);
         CGContextAddArc (context, 0, 0, fullRect.size.width/2 - _scaleMargin / 2, M_PI * 14 / 10, M_PI * 16 / 10, 0);
         CGContextStrokePath(context);
@@ -320,7 +322,7 @@
     //======================= 矩阵操作 ============================
     CGContextTranslateCTM(context, fullRect.size.width / 2, fullRect.size.width / 2);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.969 green:0.937 blue:0.227 alpha:1.00].CGColor);//线框颜色
+    CGContextSetStrokeColorWithColor(context, _scaleColor.CGColor);//线框颜色
     
     int count = (_scaleCount / 2 + 1) * currentPercent;
     CGFloat scaleAngle = 2 * M_PI / _scaleCount;
@@ -549,6 +551,16 @@
 
 - (void)setBackWaterColor:(UIColor *)backWaterColor {
     _backWaterColor = backWaterColor;
+    [self initDrawingRects];
+}
+
+- (void)setLineBgColor:(UIColor *)lineBgColor {
+    _lineBgColor = lineBgColor;
+    [self initDrawingRects];
+}
+
+- (void)setScaleColor:(UIColor *)scaleColor {
+    _scaleColor = scaleColor;
     [self initDrawingRects];
 }
 

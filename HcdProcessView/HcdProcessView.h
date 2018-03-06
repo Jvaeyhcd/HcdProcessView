@@ -68,6 +68,14 @@
  */
 @property (nonatomic, readwrite, retain) UIColor *waterBgColor;
 /**
+ *  刻度线背景色
+ */
+@property (nonatomic, readwrite, retain) UIColor *lineBgColor;
+/**
+ *  刻度线颜色
+ */
+@property (nonatomic, readwrite, retain) UIColor *scaleColor;
+/**
  *  是否显示背景上的线条
  */
 @property (nonatomic, readwrite, assign) BOOL showBgLineView;
