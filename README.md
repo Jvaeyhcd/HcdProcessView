@@ -7,7 +7,7 @@ A concise water wave animation process view.
 [![Tag](https://img.shields.io/github/tag/Jvaeyhcd/HcdProcessView.svg
 )](http://cocoapods.org/pods/HcdProcessView)
 [![Author](https://img.shields.io/badge/author-Jvaeyhcd-f07c3d.svg)](http://www.jvaeyhcd.cc)
-[![Codewars](https://www.codewars.com/users/Jvaeyhcd/badges/micro)](https://www.codewars.com/users/Jvaeyhcd)
+[![Codewars](https://www.codewars.com/users/Jvaeyhcd/badges/small)](https://www.codewars.com/users/Jvaeyhcd)
 
 ![Example](https://github.com/Jvaeyhcd/HcdProcessView/blob/master/screen.gif?raw=true)
 
