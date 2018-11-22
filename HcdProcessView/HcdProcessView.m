@@ -85,7 +85,7 @@
                            fullRect.size.width - 2 * offset,
                            fullRect.size.height - 2 * offset);
     
-    offset = _scaleMargin + _waveMargin + _scaleDivisionsWidth;
+    offset = _scaleMargin + _waveMargin + _scaleDivisionsLength;
     waveRect = CGRectMake(offset,
                           offset,
                           fullRect.size.width - 2 * offset,
@@ -154,7 +154,7 @@
     CGContextSetLineWidth(context, 1);
     CGContextSetFillColorWithColor(context, [_frontWaterColor CGColor]);
     
-    CGFloat offset = _scaleMargin + _waveMargin + _scaleDivisionsWidth;
+    CGFloat offset = _scaleMargin + _waveMargin + _scaleDivisionsLength;
     
     float frontY = currentLinePointY;
     float backY = currentLinePointY;
@@ -184,8 +184,7 @@
                 frontY = frontCircleY;
             }
         }
-        
-        if (fabs(0 - x) < 0.001) {
+        if (x == 0) {
             frontStartPoint = CGPointMake(x + offset, frontY + offset);
             CGPathMoveToPoint(frontPath, NULL, frontStartPoint.x, frontStartPoint.y);
         }
@@ -208,7 +207,7 @@
             }
         }
         
-        if (fabs(0 - x) < 0.001) {
+        if (x == 0) {
             backStartPoint = CGPointMake(x + offset, backY + offset);
             CGPathMoveToPoint(backPath, NULL, backStartPoint.x, backStartPoint.y);
         }
